@@ -22,27 +22,22 @@ Generate beautiful, minimalist map posters for any city in the world.
 
 ## Installation
 
-```bash
-pip install -r requirements.txt
-```
 
 ## Usage
 
-```bash
-python create_map_poster.py --city <city> --country <country> [options]
+Run the script and follow the interactive prompts:
+
+```sh
+python create_map_poster.py
 ```
 
-### Options
+You will be asked to enter:
+- City name
+- Country name
+- Theme (choose from a list, default: feature_based)
+- Map radius in meters (default: 29000)
 
-| Option | Short | Description | Default |
-|--------|-------|-------------|---------|
-| `--city` | `-c` | City name | required |
-| `--country` | `-C` | Country name | required |
-| `--theme` | `-t` | Theme name | feature_based |
-| `--distance` | `-d` | Map radius in meters | 29000 |
-| `--list-themes` | | List all available themes | |
-
-### Examples
+The script will generate a map poster and save it in the `posters/` directory.
 
 ```bash
 # Iconic grid patterns

@@ -1,3 +1,70 @@
+# --- Interactive Input Function ---
+def interactive_input():
+    print("\nWelcome to the City Map Poster Generator!\n")
+    city = input("Enter city name: ").strip()
+    while not city:
+        print("City name cannot be empty.")
+        city = input("Enter city name: ").strip()
+
+    country = input("Enter country name: ").strip()
+    while not country:
+        print("Country name cannot be empty.")
+        country = input("Enter country name: ").strip()
+
+
+    # List available themes with numbers
+    available_themes = get_available_themes()
+    print("\nAvailable themes:")
+    for idx, t in enumerate(available_themes, 1):
+        print(f"  {idx}. {t}")
+
+    theme = None
+    while theme is None:
+        theme_input = input(f"Enter theme name or number [feature_based]: ").strip()
+        if not theme_input:
+            theme = "feature_based"
+        elif theme_input.isdigit():
+            idx = int(theme_input)
+            if 1 <= idx <= len(available_themes):
+                theme = available_themes[idx - 1]
+            else:
+                print(f"Number out of range. Enter 1-{len(available_themes)}.")
+        elif theme_input in available_themes:
+            theme = theme_input
+        else:
+            print(f"Theme '{theme_input}' not found. Enter a valid name or number.")
+
+    # Distance helpers
+    print("\nMap radius options:")
+    print("  [S]mall  (4000-6000m): Small/dense cities (Venice, Amsterdam center)")
+    print("  [M]edium (8000-12000m): Medium cities, focused downtown (Paris, Barcelona)")
+    print("  [L]arge  (15000-20000m): Large metros, full city view (Tokyo, Mumbai)")
+    print("  Or enter a custom value in meters.")
+    while True:
+        dist_str = input("Enter map radius [S=6000, M=10000, L=18000, or meters, default 29000]: ").strip().lower()
+        if not dist_str:
+            distance = 29000
+            break
+        elif dist_str in ("s", "small"):
+            distance = 6000
+            break
+        elif dist_str in ("m", "medium"):
+            distance = 10000
+            break
+        elif dist_str in ("l", "large"):
+            distance = 18000
+            break
+        else:
+            try:
+                distance = int(dist_str)
+                if distance > 0:
+                    break
+                else:
+                    print("Distance must be a positive integer.")
+            except ValueError:
+                print("Please enter S, M, L, or a valid integer for distance.")
+
+    return city, country, theme, distance
 import osmnx as ox
 import matplotlib.pyplot as plt
 from matplotlib.font_manager import FontProperties
@@ -9,7 +76,6 @@ import time
 import json
 import os
 from datetime import datetime
-import argparse
 
 THEMES_DIR = "themes"
 FONTS_DIR = "fonts"
@@ -404,66 +470,20 @@ def list_themes():
         print()
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
-        description="Generate beautiful map posters for any city",
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog="""
-Examples:
-  python create_map_poster.py --city "New York" --country "USA"
-  python create_map_poster.py --city Tokyo --country Japan --theme midnight_blue
-  python create_map_poster.py --city Paris --country France --theme noir --distance 15000
-  python create_map_poster.py --list-themes
-        """
-    )
-    
-    parser.add_argument('--city', '-c', type=str, help='City name')
-    parser.add_argument('--country', '-C', type=str, help='Country name')
-    parser.add_argument('--theme', '-t', type=str, default='feature_based', help='Theme name (default: feature_based)')
-    parser.add_argument('--distance', '-d', type=int, default=29000, help='Map radius in meters (default: 29000)')
-    parser.add_argument('--list-themes', action='store_true', help='List all available themes')
-    
-    args = parser.parse_args()
-    
-    # If no arguments provided, show examples
-    if len(os.sys.argv) == 1:
-        print_examples()
-        os.sys.exit(0)
-    
-    # List themes if requested
-    if args.list_themes:
-        list_themes()
-        os.sys.exit(0)
-    
-    # Validate required arguments
-    if not args.city or not args.country:
-        print("Error: --city and --country are required.\n")
-        print_examples()
-        os.sys.exit(1)
-    
-    # Validate theme exists
-    available_themes = get_available_themes()
-    if args.theme not in available_themes:
-        print(f"Error: Theme '{args.theme}' not found.")
-        print(f"Available themes: {', '.join(available_themes)}")
-        os.sys.exit(1)
-    
-    print("=" * 50)
+    city, country, theme, distance = interactive_input()
+    print("\n" + "=" * 50)
     print("City Map Poster Generator")
     print("=" * 50)
-    
-    # Load theme
-    THEME = load_theme(args.theme)
-    
-    # Get coordinates and generate poster
+
+    THEME = load_theme(theme)
+
     try:
-        coords = get_coordinates(args.city, args.country)
-        output_file = generate_output_filename(args.city, args.theme)
-        create_poster(args.city, args.country, coords, args.distance, output_file)
-        
+        coords = get_coordinates(city, country)
+        output_file = generate_output_filename(city, theme)
+        create_poster(city, country, coords, distance, output_file)
         print("\n" + "=" * 50)
         print("✓ Poster generation complete!")
         print("=" * 50)
-        
     except Exception as e:
         print(f"\n✗ Error: {e}")
         import traceback

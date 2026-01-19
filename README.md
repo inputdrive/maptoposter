@@ -31,8 +31,9 @@ Run the script and follow the interactive prompts:
 python create_map_poster.py
 ```
 
+
 You will be asked to enter:
-- City name
+- City name (or a valid US zip code)
 - Country name
 - Theme (choose from a list, default: feature_based)
 - Map radius in meters (default: 29000)

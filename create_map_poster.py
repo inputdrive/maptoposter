@@ -33,6 +33,42 @@ def interactive_input():
             theme = theme_input
         else:
             print(f"Theme '{theme_input}' not found. Enter a valid name or number.")
+    # Figure size options
+    print("\nPoster size options (in inches):")
+    print("  [1] 11 x 17 (tabloid)")
+    print("  [2] 18 x 24")
+    print("  [3] 24 x 36")
+    print("  [4] 27 x 40")
+    print("  [D] Default (12 x 16)")
+    print("  Or enter custom as WxH, e.g. 20x30")
+    figsize = (12, 16)  # default
+    while True:
+        size_input = input("Select poster size [D]: ").strip().lower()
+        if not size_input or size_input == 'd':
+            figsize = (12, 16)
+            break
+        elif size_input == '1':
+            figsize = (11, 17)
+            break
+        elif size_input == '2':
+            figsize = (18, 24)
+            break
+        elif size_input == '3':
+            figsize = (24, 36)
+            break
+        elif size_input == '4':
+            figsize = (27, 40)
+            break
+        else:
+            try:
+                w, h = size_input.lower().replace('in', '').split('x')
+                figsize = (float(w.strip()), float(h.strip()))
+                if figsize[0] > 0 and figsize[1] > 0:
+                    break
+                else:
+                    print("Width and height must be positive numbers.")
+            except Exception:
+                print("Please enter a valid option or WxH in inches, e.g. 20x30.")
 
     # Distance helpers
     print("\nMap radius options:")
@@ -64,7 +100,7 @@ def interactive_input():
             except ValueError:
                 print("Please enter S, M, L, or a valid integer for distance.")
 
-    return city, country, theme, distance
+    return city, country, theme, distance, figsize
 import osmnx as ox
 import matplotlib.pyplot as plt
 from matplotlib.font_manager import FontProperties
@@ -279,7 +315,7 @@ def get_coordinates(city, country):
     else:
         raise ValueError(f"Could not find coordinates for {city}, {country}")
 
-def create_poster(city, country, point, dist, output_file):
+def create_poster(city, country, point, dist, output_file, figsize=(12, 16)):
     print(f"\nGenerating map for {city}, {country}...")
     
     # Progress bar for data fetching
@@ -310,8 +346,8 @@ def create_poster(city, country, point, dist, output_file):
     print("✓ All data downloaded successfully!")
     
     # 2. Setup Plot
-    print("Rendering map...")
-    fig, ax = plt.subplots(figsize=(12, 16), facecolor=THEME['bg'])
+    print(f"Rendering map... (Poster size: {figsize[0]} x {figsize[1]} inches)")
+    fig, ax = plt.subplots(figsize=figsize, facecolor=THEME['bg'])
     ax.set_facecolor(THEME['bg'])
     ax.set_position([0, 0, 1, 1])
     
@@ -470,7 +506,7 @@ def list_themes():
         print()
 
 if __name__ == "__main__":
-    city, country, theme, distance = interactive_input()
+    city, country, theme, distance, figsize = interactive_input()
     print("\n" + "=" * 50)
     print("City Map Poster Generator")
     print("=" * 50)
@@ -480,7 +516,7 @@ if __name__ == "__main__":
     try:
         coords = get_coordinates(city, country)
         output_file = generate_output_filename(city, theme)
-        create_poster(city, country, coords, distance, output_file)
+        create_poster(city, country, coords, distance, output_file, figsize=figsize)
         print("\n" + "=" * 50)
         print("✓ Poster generation complete!")
         print("=" * 50)
